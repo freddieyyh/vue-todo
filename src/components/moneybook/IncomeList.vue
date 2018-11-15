@@ -2,7 +2,7 @@
   <b-container fluid>
     <b-row>
       <b-col md="6" class="my-1">
-        <b-form-group horizontal label="내용" class="mb-0">
+        <b-form-group horizontal label="검색" class="mb-0">
           <b-input-group>
             <b-form-input v-model="filter" placeholder="검색할 내용을 입력해주세요." />
             <b-input-group-append>
@@ -12,20 +12,20 @@
         </b-form-group>
       </b-col>
       <b-col md="6" class="my-1">
-        <b-form-group horizontal label="Sort" class="mb-0">
+        <b-form-group horizontal label="정렬" class="mb-0">
           <b-input-group>
             <b-form-select v-model="sortBy" :options="sortOptions">
               <option slot="first" :value="null">-- 선택 --</option>
             </b-form-select>
             <b-form-select :disabled="!sortBy" v-model="sortDesc" slot="append">
-              <option :value="false">Asc</option>
-              <option :value="true">Desc</option>
+              <option :value="false">오름차순</option>
+              <option :value="true">내림차순</option>
             </b-form-select>
           </b-input-group>
         </b-form-group>
       </b-col>
       <b-col md="6" class="my-1">
-        <b-form-group horizontal label="Per page" class="mb-0">
+        <b-form-group horizontal label="페이지당 노출" class="mb-0">
           <b-form-select :options="pageOptions" v-model="perPage" />
         </b-form-group>
       </b-col>
@@ -44,11 +44,11 @@
       >
       <template slot="category" slot-scope="row">{{row.value}}</template>
       <template slot="actions" slot-scope="row">
-        <b-button size="sm" @click.stop="showUpdateModal(row.item, row.index, $event.target)" class="mr-1">
-          수정하기
+        <b-button :variant="'outline-primary'" size="sm" @click.stop="showUpdateModal(row.item, row.index, $event.target)" class="mr-1">
+          수정
         </b-button>
-        <b-button size="sm" @click.stop="row.toggleDetails">
-          {{ row.detailsShowing ? '상세' : '닫기' }}
+        <b-button :variant="'outline-success'" size="sm" @click.stop="row.toggleDetails">
+          {{ row.detailsShowing ? '닫기' : '상세' }}
         </b-button>
       </template>
       <template slot="row-details" slot-scope="row">
@@ -61,18 +61,19 @@
     </b-table>
 
     <b-row>
-      <b-col md="6" class="my-1">
+      <b-col offset-md="5" md="3" class="my-1">
         <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="my-0" />
       </b-col>
-      <b-col md="6" class="my-1">
-        <b-btn v-b-modal.incomeModal>추가</b-btn>
+      <b-col offset-md="3" md="1" class="my-1">
+        <b-btn :variant="'outline-primary'" v-b-modal.incomeModal>추가</b-btn>
       </b-col>
     </b-row>
 
     <income-form id="incomeModal"
-                 :title="'입력'"
+                 :title="modal.title"
                  :category-options="categoryOptions"
-                 :payment-type-options="paymentTypeOptions">
+                 :asset-type-options="assetTypeOptions"
+                 @hidden="resetModal">
     </income-form>
 
   </b-container>
@@ -80,15 +81,25 @@
 
 
 <script>
+import IncomeForm from './IncomeForm.vue'
+
 export default {
-    props: ['bankbooks'],
+    components: {
+      IncomeForm
+    },
+    props: ['initialIncomes', 'categoryOptions', 'assetTypeOptions'],
     data() {
       return {
-        modal: { 
+        modal: {
           title: '',
           income: {}
         },
         fields: [
+          {
+            key: 'datetime',
+            label: '일시',
+            sortable: true
+          },
           {
             key: 'money',
             label: '금액',
@@ -110,16 +121,15 @@ export default {
             sortable: true
           },
           {
-            key: 'datetime',
-            label: '일시',
-            sortable: true,
-            variant: 'danger'
+              key: 'actions',
+              label: '기능',
+              sortable: false,
           }
         ],
         incomes: [],
         currentPage: 1,
         perPage: 5,
-        totalRows: incomes.length,
+        totalRows: 0,
         pageOptions: [ 20, 50, 100 ],
         sortBy: null,
         sortDesc: false,
@@ -128,10 +138,10 @@ export default {
     },
     created: function() {
       this.incomes = [
-        { money: 10000, description: '피자', category: '식비', datetime: '2018. 11. 07. 21:30' },
-        { money: 11000, description: '치킨', category: '의료', datetime: '2018. 11. 07. 22:30' },
-        { money: 12000, description: '햄버거', category: '교통', datetime: '2018. 11. 07. 23:30' },
-        { money: 13000, description: '라면', category: '교통', datetime: '2018. 11. 07. 20:30' }
+        { money: 10000, description: '피자', category: '식비', assetType: 'CASH', datetime: '2018. 11. 07. 21:30' },
+        { money: 11000, description: '치킨', category: '의료', assetType: 'CASH', datetime: '2018. 11. 07. 22:30' },
+        { money: 12000, description: '햄버거', category: '교통', assetType: 'CASH', datetime: '2018. 11. 07. 23:30' },
+        { money: 13000, description: '라면', category: '교통', assetType: 'CASH', datetime: '2018. 11. 07. 20:30' }
       ];
 
       this.totalRows = this.incomes.length
@@ -157,20 +167,25 @@ export default {
       showUpdateModal(item, index, button) {
         this.modal.title = `수정하기`
         this.modal.content = item
-        this.$root.$emit('bv::show::modal', 'updateModal', button)
+        this.$root.$emit('bv::show::modal', 'incomeModal', button)
       },
       resetModal () {
-        this.modal.title = ''
+        this.modal.title = '입력하기'
         this.modal.content = {}
       },
-        removeBankbook(bankbookId) {
-          // eslint-disable-next-line
-          console.log(bankbookId);
-          this.$emit('click:removeButton', bankbookId);
-        },
-        openBankbookForm(bankbook) {
-          this.$emit('click:updateButton', bankbook);
-        }
+      onFiltered (filteredItems) {
+          // Trigger pagination to update the number of buttons/pages due to filtering
+          this.totalRows = filteredItems.length
+          this.currentPage = 1
+      },
+      removeBankbook(bankbookId) {
+        // eslint-disable-next-line
+        console.log(bankbookId);
+        this.$emit('click:removeButton', bankbookId);
+      },
+      openBankbookForm(bankbook) {
+        this.$emit('click:updateButton', bankbook);
+      }
     }
 }
 </script>

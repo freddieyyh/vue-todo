@@ -1,6 +1,6 @@
 <template>
   <header>
-    <h1>통장 관리</h1>
+    <h1>수입 관리</h1>
   </header>
 </template>
 

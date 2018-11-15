@@ -1,8 +1,9 @@
 <template>
   <div id="app">
-    <TodoHeader></TodoHeader>
-    <b-btn v-b-modal.incomeModal>추가</b-btn>
-    <income-list></income-list>
+    <Header></Header>
+    <income-list :category-options="categoryOptions"
+                 :asset-type-options="assetTypeOptions">
+    </income-list>
   </div>
 </template>
 
@@ -10,13 +11,13 @@
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
-import TodoHeader from './components/TodoHeader.vue'
+import Header from './components/Header.vue'
 import IncomeList from './components/moneybook/IncomeList.vue'
 
 export default {
   name: 'app',
   components: {
-    TodoHeader,
+    Header,
     IncomeList
   },
   data: function() {
@@ -26,7 +27,7 @@ export default {
         { 'id': 2, 'name': '교통' },
         { 'id': 3, 'name': '의료' }
       ],
-      paymentTypeOptions: [
+        assetTypeOptions: [
         'CASH', 'CREDITCARD', 'CHECKCARD'
       ]
     }

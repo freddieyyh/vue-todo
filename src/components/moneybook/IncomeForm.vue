@@ -2,7 +2,8 @@
   <b-modal :id="id"
             ref="incomeModal"
             :title="title"
-            @ok="handleSave">
+            @ok="handleSave"
+            @hidden="$emit('hidden')">
     <b-form @submit.stop.prevent="handleSubmit">
       <b-form-group label="금액: "
                     label-for="incomeMoney"
@@ -68,9 +69,6 @@ export default {
     }
   },
   methods: {
-    show() {
-      this.$refs.incomeModal.show()
-    },
     handleSave(evt) {
       evt.preventDefault()
       this.handleSubmit()
